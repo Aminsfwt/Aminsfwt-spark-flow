@@ -1,0 +1,30 @@
+
+name: spark airflow project action # github workflow name
+
+on: # trigger workflow on push or pull request events but only for the main branch
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs: # define the jobs to be run
+  build:
+    runs-on: ubuntu-latest # specify the operating system to run the job on
+    steps: # define the steps to be executed in the job
+      - uses: actions/checkout@v3 # checkout the repository to the runner
+      - name: Set up Python 3.11 # setup Python 3.11 environment
+        uses: actions/setup-python@v4 # setup Python environment
+        with:
+          python-version: 3.11
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run tests
+        run: |
+          pytest tests/
+      - name: tests validation
+        run: |
+          echo "All tests passed successfully!"    
