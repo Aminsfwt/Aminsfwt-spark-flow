@@ -1,4 +1,4 @@
-version: "3.8"
+#version: "3.8"
 
 x-spark-common: &spark-common
   image: apache/spark:3.5.1
@@ -33,7 +33,7 @@ services:
       tail -f /opt/spark/logs/*"
     ports:
       - "7077:7077"
-      - "8080:8080"
+      - "9090:8080"
 
   spark-worker-1:
     <<: *spark-common
@@ -44,8 +44,11 @@ services:
       tail -f /opt/spark/logs/*"
     depends_on:
       - spark-master
-    ports:
-      - "8081:8081"
+    environment:
+      SPARK_MODE: worker
+      SPARK_WORKER_CORES: 2
+      SPARK_WORKER_MEMORY: 1g
+      SPARK_MASTER_URL: spark://spark-master:7077  
 
   spark-worker-2:
     <<: *spark-common
@@ -56,8 +59,11 @@ services:
       tail -f /opt/spark/logs/*"
     depends_on:
       - spark-master
-    ports:
-      - "8082:8081"  
+    environment:
+      SPARK_MODE: worker
+      SPARK_WORKER_CORES: 2
+      SPARK_WORKER_MEMORY: 1g
+      SPARK_MASTER_URL: spark://spark-master:7077   
 
   postgres:
     image: postgres:16
@@ -68,20 +74,24 @@ services:
     networks:
       - spark-network 
 
-  webserver:
-    <<: *airflow-common
-    container_name: airflow-webserver
-    command: webserver
-    depends_on:
-      - scheduler
-
   scheduler:
     <<: *airflow-common
     container_name: airflow-scheduler
     command: >
       bash -c "airflow db migrate &&
-         airflow user create --username amin --password amin --firstname dmin --lastname safout --role Admin --email aminsafoutali@gmeil.com &&
-         airflow scheduler"    
+         airflow users create --username amin --password amin --firstname dmin --lastname safout --role Admin --email aminsafoutali@gmeil.com &&
+         airflow scheduler"  
+  webserver:
+    <<: *airflow-common
+    container_name: airflow-webserver
+    command: >
+      bash -c "airflow db migrate && airflow webserver"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - scheduler
+
+  
 
 networks:
   spark-network:
