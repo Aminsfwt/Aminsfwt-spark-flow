@@ -1,4 +1,4 @@
-FROM image: apache/airflow:2.7.3-python3.11
+FROM apache/airflow:2.7.3
 
 USER root
 RUN apt-get update \
@@ -10,6 +10,5 @@ ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
 USER airflow
 
 # Python deps
-COPY requirements.txt /tmp/requirements.txt
-RUN pip install --no-cache-dir -r /tmp/requirements.txt
-
+# COPY requirements.txt /tmp/requirements.txt
+RUN pip install apache-airflow apache-airflow-providers-apache-spark pyspark
